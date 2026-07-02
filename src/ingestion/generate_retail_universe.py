@@ -4,12 +4,18 @@ from pathlib import Path
 import pandas as pd
 from faker import Faker
 
+# ---------------------------------
+# Configuration
+# ---------------------------------
 fake = Faker("en_IN")
+
 random.seed(42)
 Faker.seed(42)
 
 OUTPUT_DIR = Path("data/raw")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+OUTPUT_FILE = OUTPUT_DIR / "retail_universe.csv"
 
 NUM_STORES = 10000
 
@@ -42,13 +48,16 @@ LOCATIONS = [
     ("West Bengal", "Kolkata", "Kolkata")
 ]
 
+# ---------------------------------
+# Generate Store Master
+# ---------------------------------
 rows = []
 
 for i in range(1, NUM_STORES + 1):
 
     state, city, district = random.choice(LOCATIONS)
 
-    rows.append({
+    row = {
         "Store_ID": f"S{i:06d}",
         "Store_Name": fake.company(),
         "Channel": random.choice(CHANNELS),
@@ -61,14 +70,38 @@ for i in range(1, NUM_STORES + 1):
         "Opening_Date": fake.date_between("-20y", "today"),
         "Store_Status": random.choice(STORE_STATUS),
         "Owner_Type": random.choice(OWNER_TYPES)
-    })
+    }
 
-df = pd.DataFrame(rows)
+    rows.append(row)
 
-output_file = OUTPUT_DIR / "retail_universe.csv"
+# ---------------------------------
+# Create DataFrame
+# ---------------------------------
+df = pd.DataFrame(
+    rows,
+    columns=[
+        "Store_ID",
+        "Store_Name",
+        "Channel",
+        "State",
+        "City",
+        "District",
+        "Pincode",
+        "Latitude",
+        "Longitude",
+        "Opening_Date",
+        "Store_Status",
+        "Owner_Type"
+    ]
+)
 
-df.to_csv(output_file, index=False)
+# Verify columns before saving
+print("\nColumns Generated:")
+print(df.columns.tolist())
 
-print(f"Dataset created successfully.")
-print(f"Rows: {len(df)}")
-print(f"Saved to: {output_file}")
+# Save CSV
+df.to_csv(OUTPUT_FILE, index=False)
+
+print("\nRetail Universe Created Successfully")
+print(f"Rows   : {len(df)}")
+print(f"Output : {OUTPUT_FILE}")
